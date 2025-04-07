@@ -1,0 +1,11 @@
+{
+  "protoc": {
+    "options": [
+      "--proto_path=${workspaceRoot}/protos/"
+    ]
+  },
+  "grpc-clicker.timeout": 2,
+  "files.associations": {
+    "*.css": "tailwindcss"
+  }
+}
