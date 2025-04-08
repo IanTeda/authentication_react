@@ -1,8 +1,15 @@
+//-- vite.config.ts
+
+// # Vite Configuration
+//
+// This file is used to configure Vite, a build tool that focuses on speed and performance.
+
 import { defineConfig, Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
-import { resolve } from "path";
+import path, { resolve } from "path";
 import { exec } from "child_process";
+import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 
 // # Protocol Buffers Compiler Plugin
 // This plugin watches for changes in .proto files and rebuilds them using the protoc compiler
@@ -21,7 +28,7 @@ function protocBuild(): Plugin {
     },
     // This hook is called when a watch file changes. It checks if the changed file is a .proto file. If it is, it rebuilds the protos using the protoc compiler.
     async handleHotUpdate({ file, server }) {
-      if (file.endsWith('.proto')) {
+      if (file.endsWith(".proto")) {
         console.log(`Proto file changed: ${file}. Rebuilding...`);
 
         // Adjust if your proto files are elsewhere
@@ -67,5 +74,18 @@ function protocBuild(): Plugin {
 //
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), tailwindcss(), protocBuild()],
+  plugins: [
+    TanStackRouterVite({ target: "react", autoCodeSplitting: true }),
+    protocBuild(),
+    react(),
+    tailwindcss(),
+  ],
+  resolve: {
+    // This allows you to use absolute imports in your vite project
+    // For example, instead of importing from "../../components/MyComponent",
+    // you can import from "@/components/MyComponent"
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
 });
