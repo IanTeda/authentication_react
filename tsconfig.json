@@ -1,5 +1,4 @@
 //-- tsconfig.json
-
 // # TypeScript Configuration File
 //
 // This is the base configuration file for a TypeScript project.
@@ -10,7 +9,6 @@
 // code, while tsconfig.node.json is used for the Node.js code. The tsconfig.json 
 // file is used to specify the base configuration options that are common to both 
 // the application and Node.js code.
-
 {
   "files": [],
   "references": [
@@ -21,4 +19,13 @@
       "path": "./tsconfig.node.json"
     }
   ],
+  /** Needed for Shadcn UI Imports */
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    }
+  }
 }
