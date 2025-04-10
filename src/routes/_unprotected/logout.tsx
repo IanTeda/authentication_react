@@ -1,3 +1,4 @@
+import { LogOutCard } from '@/components/LogoutCard'
 import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_unprotected/logout')({
@@ -5,5 +6,9 @@ export const Route = createFileRoute('/_unprotected/logout')({
 })
 
 function LogoutRouteComponent() {
-  return <div>Hello "/_unprotected/logout"!</div>
+  return (
+    <div className="w-full max-w-sm md:max-w-3xl">
+      <LogOutCard />
+    </div>
+  )
 }
