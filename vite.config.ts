@@ -74,6 +74,7 @@ function protocBuild(): Plugin {
 //
 // https://vite.dev/config/
 export default defineConfig({
+  envDir: "./config",
   plugins: [
     TanStackRouterVite({ target: "react", autoCodeSplitting: true }),
     protocBuild(),

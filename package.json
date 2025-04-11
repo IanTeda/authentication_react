@@ -11,6 +11,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@protobuf-ts/grpcweb-transport": "^2.9.6",
     "@protobuf-ts/protoc": "^2.9.6",
     "@protobuf-ts/runtime": "^2.9.6",
     "@radix-ui/react-dialog": "^1.1.7",

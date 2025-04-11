@@ -14,7 +14,7 @@
  *
  * @class Configuration
  * @property {string} APPLICATION_MODE - Application mode for the environment (i.e. development or production.)
- * @property {string} BASE_URL - Base URL for the authentication service
+ * @property {string} AUTHENTICATION_URL - Base URL for the authentication service
  * @property {string} LOG_LEVEL - Log level for the application  *
  *
  * ## Reference
@@ -59,7 +59,7 @@ class Configuration {
    * The base URL for the authentication backend service
    *
    */
-  BASE_URL: string;
+  AUTHENTICATION_BASE_URL: string;
 
   /**
    * ### Application Log Level
@@ -80,14 +80,12 @@ class Configuration {
     // Set the authentication base URL to the value of
     // VITE_AUTHENTICATION_BASE_URL or default to localhost:8081 if not set.
     // This is used to set the base URL for the authentication service.
-    if (!import.meta.env.VITE_BASE_URL) {
-      console.warn(
-        "VITE_AUTHENTICATION_BASE_URL is not set.  Using default value."
-      );
-      this.BASE_URL = "http://127.0.0.1:8081";
+    if (!import.meta.env.VITE_AUTHENTICATION_BASE_URL) {
+      console.warn("VITE_APPLICATION_URL is not set.  Using default value.");
+      this.AUTHENTICATION_BASE_URL = "http://127.0.0.1:8081";
     } else {
-      this.BASE_URL =
-        import.meta.env.VITE_BASE_URL;
+      this.AUTHENTICATION_BASE_URL =
+        import.meta.env.VITE_AUTHENTICATION_BASE_URL;
     }
 
     // Set the log level to the value of VITE_LOG_LEVEL or default to error
