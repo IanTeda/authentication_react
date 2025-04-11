@@ -26,8 +26,8 @@
  */
 
 import {
-  ILogObj as TSLogObj,
-  ILogObjMeta as TSLogObjMeta,
+  type ILogObj as TSLogObj,
+  type ILogObjMeta as TSLogObjMeta,
   Logger as TSLogger,
 } from "tslog";
 import { configuration } from "./configuration";
@@ -63,7 +63,7 @@ const logLevel = configuration.LOG_LEVEL;
  * The log type is "pretty". The log level is determined by the logLevel variable.
  */
 const logOptions: TSLogObj = {
-  name: "Personal Ledger",
+  name: "Authentication Service",
   type: "pretty",
   minLevel: levelNumberToNameMap[logLevel],
   hideLogPositionForProduction: true,
@@ -89,19 +89,69 @@ const logOptions: TSLogObj = {
 };
 
 /**
+ * ### Log Method
+ *
+ * Define the log method type. The log method takes multiple arguments and returns
+ * a log object with the log level and message.
+ */
+type LogMethod = (...args: unknown[]) => (TSLogObj & TSLogObjMeta) | undefined;
+
+/**
+ * ### Logger Interface
+ *
+ * Define the logger interface. The logger interface defines the log methods
+ * that are available in the logger object. The log methods are silly, trace,
+ * debug, info, warn, error, and fatal.
+ */
+interface ILogger {
+  silly: LogMethod;
+  trace: LogMethod;
+  debug: LogMethod;
+  info: LogMethod;
+  warn: LogMethod;
+  error: LogMethod;
+  fatal: LogMethod;
+}
+
+/**
  *
  */
-export default class Logger {
+export default class Logger implements ILogger {
+  /**
+   * ### Singleton Instance
+   *
+   * The singleton instance of the Logger class. This instance is used to log
+   * messages. The instance is created when the class is first accessed and ensures
+   * that only one instance of the Logger class exists.
+   * @private
+   * @static
+   * @type {Logger}
+   * @memberof Logger
+   * @description The singleton instance of the Logger class.
+   * @example
+   * const logger = Logger.getInstance();
+   * logger.info("This is an info message");
+   * @returns {Logger} The singleton instance of the Logger class.
+   * @throws {Error} If the logger fails to initialize.
+   */
+  private static instance: Logger;
+
   /**
    * ### TSLogger Instance
    */
   private logger: TSLogger<TSLogObj>;
 
-  public constructor() {
-    // Construct a new TS logger instance
-    this.logger = new TSLogger(logOptions);
+  private constructor() {
+    try {
+      this.logger = new TSLogger(logOptions);
+      this.bindMethods();
+    } catch (error) {
+      console.error("Failed to initialize logger:", error);
+      throw error;
+    }
+  }
 
-    // overload is required to get the real position for logging
+  private bindMethods(): void {
     this.silly = this.logger.silly.bind(this.logger);
     this.trace = this.logger.trace.bind(this.logger);
     this.debug = this.logger.debug.bind(this.logger);
@@ -109,6 +159,13 @@ export default class Logger {
     this.warn = this.logger.warn.bind(this.logger);
     this.error = this.logger.error.bind(this.logger);
     this.fatal = this.logger.fatal.bind(this.logger);
+  }
+
+  public static getInstance(): Logger {
+    if (!Logger.instance) {
+      Logger.instance = new Logger();
+    }
+    return Logger.instance;
   }
 
   /**
@@ -167,3 +224,5 @@ export default class Logger {
     return this.logger.fatal(...args);
   }
 }
+
+export const logger = Logger.getInstance();

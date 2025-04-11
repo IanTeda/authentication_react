@@ -1,11 +1,17 @@
 import { AppHeader } from '@/components/AppHeader';
+import Logger from '@/logger';
 import { createFileRoute, Outlet } from '@tanstack/react-router'
+
+// Import the logger instance
+const log = Logger.getInstance();
 
 export const Route = createFileRoute('/_protected')({
   component: ProtectedRouteComponent,
 })
 
 function ProtectedRouteComponent() {
+  log.silly('ProtectedRouteComponent rendered');
+
   return (
     <div className="flex min-h-screen flex-col">
       <AppHeader />

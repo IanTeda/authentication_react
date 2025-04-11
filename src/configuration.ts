@@ -14,7 +14,7 @@
  *
  * @class Configuration
  * @property {string} APPLICATION_MODE - Application mode for the environment (i.e. development or production.)
- * @property {string} AUTHENTICATION_BASE_URL - Base URL for the authentication service
+ * @property {string} BASE_URL - Base URL for the authentication service
  * @property {string} LOG_LEVEL - Log level for the application  *
  *
  * ## Reference
@@ -37,6 +37,13 @@ type logLevel =
  */
 class Configuration {
   /**
+   * ### Singleton Instance
+   *
+   * The singleton instance of the Configuration class.
+   */
+  private static instance: Configuration;
+
+  /**
    * ### Application Mode
    *
    * Application mode for the environment (i.e. development or production.)
@@ -52,7 +59,7 @@ class Configuration {
    * The base URL for the authentication backend service
    *
    */
-  AUTHENTICATION_BASE_URL: string;
+  BASE_URL: string;
 
   /**
    * ### Application Log Level
@@ -64,7 +71,7 @@ class Configuration {
   /**
    * ### Configuration Class Constructor
    */
-  constructor() {
+  private constructor() {
     // Set the application mode to the value of import.meta.env.MODE
     // or default to development if not set.  This is used to set the
     // application mode for the environment (i.e. development or production.)
@@ -73,19 +80,33 @@ class Configuration {
     // Set the authentication base URL to the value of
     // VITE_AUTHENTICATION_BASE_URL or default to localhost:8081 if not set.
     // This is used to set the base URL for the authentication service.
-    if (!import.meta.env.VITE_AUTHENTICATION_BASE_URL) {
+    if (!import.meta.env.VITE_BASE_URL) {
       console.warn(
         "VITE_AUTHENTICATION_BASE_URL is not set.  Using default value."
       );
-      this.AUTHENTICATION_BASE_URL = "http://127.0.0.1:8081";
+      this.BASE_URL = "http://127.0.0.1:8081";
     } else {
-      this.AUTHENTICATION_BASE_URL =
-        import.meta.env.VITE_AUTHENTICATION_BASE_URL;
+      this.BASE_URL =
+        import.meta.env.VITE_BASE_URL;
     }
 
     // Set the log level to the value of VITE_LOG_LEVEL or default to error
     // if not set.  This is used to set the log level for the application.
     this.LOG_LEVEL = import.meta.env.VITE_LOG_LEVEL || "error";
+  }
+
+  /**
+   * ### Get Instance
+   *
+   * Get the singleton instance of the Configuration class.
+   *
+   * @returns {Configuration} The singleton instance of the Configuration class.
+   */
+  public static getInstance(): Configuration {
+    if (!Configuration.instance) {
+      Configuration.instance = new Configuration();
+    }
+    return Configuration.instance;
   }
 }
 
@@ -100,4 +121,4 @@ class Configuration {
  * - LOG_LEVEL - Log level for the application
  *
  */
-export const configuration = new Configuration();
+export const configuration = Configuration.getInstance();
