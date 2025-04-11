@@ -9,6 +9,7 @@
     "*.css": "tailwindcss"
   },
   "cSpell.words": [
+    "gitmodules",
     "shadcn"
   ]
 }

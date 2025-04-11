@@ -6,6 +6,7 @@
 !.devcontainer
 !.vscode
 !.gitmodules
+!/config/.env.sample
 
 # Logs
 logs
