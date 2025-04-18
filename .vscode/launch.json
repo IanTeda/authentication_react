@@ -8,7 +8,7 @@
       "runtimeArgs": [
         "--remote-debugging-port=9222"
       ],
-      "url": "http://localhost:5173/",
+      "url": "http://127.0.0.1:5173/",
       "webRoot": "${workspaceFolder}"
     }
   ]

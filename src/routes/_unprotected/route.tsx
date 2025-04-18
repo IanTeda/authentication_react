@@ -1,10 +1,19 @@
 import Logger from "@/logger";
-import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 
 // Import the logger instance
 const log = Logger.getInstance();
 
 export const Route = createFileRoute("/_unprotected")({
+  beforeLoad: async ({ context }) => {
+    log.silly("Before unprotected route load...");
+
+    if (!context.authentication) {
+      throw redirect({
+        to: "/",
+      });
+    }
+  },
   component: UnprotectedRouteComponent,
 });
 

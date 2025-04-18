@@ -1,13 +1,34 @@
+//-- ./src/routes/_protected/route.tsx
+
+/**
+ * 
+ */
+
 import { AppHeader } from '@/components/AppHeader';
 import Logger from '@/logger';
-import { createFileRoute, Outlet } from '@tanstack/react-router'
+import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 
 // Import the logger instance
 const log = Logger.getInstance();
 
-export const Route = createFileRoute('/_protected')({
+export const Route = createFileRoute("/_protected")({
+  beforeLoad: async ({ context, location }) => {
+    log.silly("Before protected layout load...");
+
+    if (!context.authentication.accessToken) {
+      throw redirect({
+        to: "/login",
+        search: {
+          // Use the current location to power a redirect after login
+          // (Do not use `router.state.resolvedLocation` as it can
+          // potentially lag behind the actual current location)
+          redirect: location.href as "/" | "/account",
+        },
+      });
+    }
+  },
   component: ProtectedRouteComponent,
-})
+});
 
 function ProtectedRouteComponent() {
   log.silly('ProtectedRouteComponent rendered');
