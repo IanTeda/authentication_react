@@ -40,7 +40,7 @@ function protocBuild(): Plugin {
 
         // Command to run the protoc compiler
         // "build:proto": "npx protoc --ts_out src/lib/grpc -I=./protos/authentication --proto_path ./protos/authentication/**/*.proto --experimental_allow_proto3_optional",
-        const command = `npx protoc --ts_out ${outputDir} -I=${protoDir} --experimental_allow_proto3_optional ${protoFiles}`;
+        const command = `npx protoc --ts_out=${outputDir} -I=${protoDir} --experimental_allow_proto3_optional ${protoFiles}`;
 
         try {
           await new Promise<void>((resolve, reject) => {
@@ -88,5 +88,9 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+  },
+  server: {
+    host: "localhost:5173",
+    port: 5173,
   },
 });

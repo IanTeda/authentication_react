@@ -52,3 +52,16 @@ export default tseslint.config({
   },
 })
 ```
+
+
+## Generate Grpc Code
+
+```bash
+npx protoc \
+  --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts_proto \
+  --ts_out=src/lib/grpc \
+  --proto_path=protos/authentication \
+  -I=protos/authentication \
+  --experimental_allow_proto3_optional \
+  protos/authentication/*.proto
+```

@@ -17,6 +17,11 @@
 /// - ResetPassword: Reset a password
 /// - Register: Request registration on the server
 /// - Logout: Remove my access and refresh tokens on the server
+///
+/// ## Actions
+///
+/// - [ ] Add token expires in to token responses
+/// - [ ] Add rate limiting metadata to responses
 //
 import { Empty } from "./common";
 import { ServiceType } from "@protobuf-ts/runtime-rpc";
@@ -56,7 +61,7 @@ export interface LoginRequest {
  */
 export interface LoginResponse {
     /**
-     * Access token to be authorize grpc calls
+     * Access token to be authorise grpc calls
      *
      * @generated from protobuf field: string access_token = 1;
      */
@@ -69,15 +74,24 @@ export interface LoginResponse {
     user?: UserResponse;
 }
 /**
- * Refresh response message definitition
+ * Refresh response message definition
  *
  * @generated from protobuf message authentication.RefreshResponse
  */
 export interface RefreshResponse {
     /**
+     * Access token to be authorise grpc calls
+     *
      * @generated from protobuf field: string access_token = 1;
      */
     accessToken: string;
+    /**
+     * Return the user instance that has just signed in. This is needed because
+     * the user is store in React memory which is lost between browser refreshes
+     *
+     * @generated from protobuf field: authentication.UserResponse user = 2;
+     */
+    user?: UserResponse;
 }
 /**
  * Update password request message definition
@@ -325,7 +339,8 @@ export const LoginResponse = new LoginResponse$Type();
 class RefreshResponse$Type extends MessageType<RefreshResponse> {
     constructor() {
         super("authentication.RefreshResponse", [
-            { no: 1, name: "access_token", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
+            { no: 1, name: "access_token", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 2, name: "user", kind: "message", T: () => UserResponse }
         ]);
     }
     create(value?: PartialMessage<RefreshResponse>): RefreshResponse {
@@ -343,6 +358,9 @@ class RefreshResponse$Type extends MessageType<RefreshResponse> {
                 case /* string access_token */ 1:
                     message.accessToken = reader.string();
                     break;
+                case /* authentication.UserResponse user */ 2:
+                    message.user = UserResponse.internalBinaryRead(reader, reader.uint32(), options, message.user);
+                    break;
                 default:
                     let u = options.readUnknownField;
                     if (u === "throw")
@@ -358,6 +376,9 @@ class RefreshResponse$Type extends MessageType<RefreshResponse> {
         /* string access_token = 1; */
         if (message.accessToken !== "")
             writer.tag(1, WireType.LengthDelimited).string(message.accessToken);
+        /* authentication.UserResponse user = 2; */
+        if (message.user)
+            UserResponse.internalBinaryWrite(message.user, writer.tag(2, WireType.LengthDelimited).fork(), options).join();
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);

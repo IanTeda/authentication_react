@@ -13,11 +13,15 @@
  * @subcategory Authentication
  */
 
-import { configuration } from "@/configuration";
-import { AuthenticationServiceClient } from "@/lib/grpc/authentication.client";
-import { GrpcWebFetchTransport } from "@protobuf-ts/grpcweb-transport";
 import Logger from "@/logger";
-import { LoginRequest, type LoginResponse } from "@/lib/grpc/authentication";
+import {
+  LoginRequest,
+  LogoutResponse,
+  RefreshResponse,
+  type LoginResponse,
+} from "@/lib/grpc/authentication";
+import { Client } from "@/client";
+import { Empty } from "@/lib/grpc/common";
 
 /**
  * Create a new logger object
@@ -27,7 +31,7 @@ import { LoginRequest, type LoginResponse } from "@/lib/grpc/authentication";
 const log: Logger = Logger.getInstance();
 
 /**
- * ### Send Authentication Request
+ * # Send Authentication Request
  *
  * The sendAuthenticationRequest function is responsible for sending an authentication
  * request to the backend. The function accepts an email and password and returns a
@@ -44,39 +48,92 @@ export async function sendLoginRequest(
   log.debug("Sending authentication request to server.");
 
   /**
-   * Create a new GRPC transport layer
-   * TODO: Abstract transport layer for other services to use
-   */
-  const transport = new GrpcWebFetchTransport({
-    baseUrl: configuration.AUTHENTICATION_BASE_URL,
-  });
-
-  /**
-   * Create a new authentication client
-   */
-  const authentication = new AuthenticationServiceClient(transport);
-
-  /**
-   * Create a new authentication request object
-   */
-  const authentication_request = LoginRequest.create({
-    email: email,
-    password: password,
-  });
-
-  /**
-   * Send authentication request to authentication client
+   * Send login request to authentication client
    */
   try {
-    const { response: login_response } = await authentication.login(
-      authentication_request
-    );
+    const client = await Client.new();
+    const authentication_client = client.authenticationClient();
 
-    log.debug("Login response is: ", login_response);
+    /**
+     * Create a new authentication request object
+     */
+    const login_request: LoginRequest = {
+      email,
+      password,
+    };
 
-    return login_response;
+    // const { response: login_response, headers } =
+    //   await authentication_client.login(login_request);
+    const response =
+      await authentication_client.login(login_request);
+    
+    log.silly("Login response is: ", response);
+
+    // log.debug("Login response is: ", login_response);
+
+    return response.response;
   } catch (error) {
     log.error("Error sending login request:", error);
+    throw error; // Re-throw the error to be handled by the caller
+  }
+}
+
+/**
+ * # Send Refresh Request
+ *
+ * This function request a refresh of the access token from the authentication
+ * client. Returning a new access token
+ *
+ * @returns <RefreshResponse>: a new access token
+ */
+export async function sendRefreshRequest(): Promise<RefreshResponse> {
+  log.debug("Sending refresh request for a new access token.");
+  /**
+   * Send refresh request to authentication client
+   */
+  try {
+    const client = await Client.new();
+    const authentication_client = client.authenticationClient();
+
+    const request_message: Empty = {};
+
+    const { response: refresh_response } =
+      await authentication_client.refresh(request_message);
+
+    log.debug("Refresh response is: ", refresh_response);
+
+    return refresh_response;
+  } catch (error) {
+    log.error("Refresh service request failed with:", error);
+    throw error; // Re-throw the error to be handled by the caller
+  }
+}
+
+/**
+ * # Send Logout Request
+ * 
+ * This function attempts to logout the current user in the authentication service.
+ * The backend uses the refresh token that the browser sends as a http-only cookie
+ * 
+ * @returns 
+ */
+export async function sendLogoutRequest(): Promise<LogoutResponse> {
+  log.debug("Send logout request to the authentication service");
+
+  try {
+    const client = await Client.new();
+    const authentication_client = client.authenticationClient();
+
+    const request_message: Empty = {};
+
+    const { response: logout_response } =
+      await authentication_client.logout(request_message);
+
+    log.debug("Refresh response is: ", logout_response);
+
+    return logout_response;
+  } catch (error) {
+    log.error("Error sending refresh request:", error);
     throw error; // Re-throw the error to be handled by the caller
   }
 }

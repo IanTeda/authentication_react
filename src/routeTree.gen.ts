@@ -16,6 +16,7 @@ import { Route as ProtectedRouteImport } from './routes/_protected/route'
 import { Route as ProtectedIndexImport } from './routes/_protected/index'
 import { Route as UnprotectedLogoutImport } from './routes/_unprotected/logout'
 import { Route as UnprotectedLoginImport } from './routes/_unprotected/login'
+import { Route as UnprotectedAuthenticatingImport } from './routes/_unprotected/authenticating'
 import { Route as ProtectedAccountImport } from './routes/_protected/account'
 
 // Create/Update Routes
@@ -45,6 +46,12 @@ const UnprotectedLogoutRoute = UnprotectedLogoutImport.update({
 const UnprotectedLoginRoute = UnprotectedLoginImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => UnprotectedRouteRoute,
+} as any)
+
+const UnprotectedAuthenticatingRoute = UnprotectedAuthenticatingImport.update({
+  id: '/authenticating',
+  path: '/authenticating',
   getParentRoute: () => UnprotectedRouteRoute,
 } as any)
 
@@ -78,6 +85,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/account'
       preLoaderRoute: typeof ProtectedAccountImport
       parentRoute: typeof ProtectedRouteImport
+    }
+    '/_unprotected/authenticating': {
+      id: '/_unprotected/authenticating'
+      path: '/authenticating'
+      fullPath: '/authenticating'
+      preLoaderRoute: typeof UnprotectedAuthenticatingImport
+      parentRoute: typeof UnprotectedRouteImport
     }
     '/_unprotected/login': {
       id: '/_unprotected/login'
@@ -120,11 +134,13 @@ const ProtectedRouteRouteWithChildren = ProtectedRouteRoute._addFileChildren(
 )
 
 interface UnprotectedRouteRouteChildren {
+  UnprotectedAuthenticatingRoute: typeof UnprotectedAuthenticatingRoute
   UnprotectedLoginRoute: typeof UnprotectedLoginRoute
   UnprotectedLogoutRoute: typeof UnprotectedLogoutRoute
 }
 
 const UnprotectedRouteRouteChildren: UnprotectedRouteRouteChildren = {
+  UnprotectedAuthenticatingRoute: UnprotectedAuthenticatingRoute,
   UnprotectedLoginRoute: UnprotectedLoginRoute,
   UnprotectedLogoutRoute: UnprotectedLogoutRoute,
 }
@@ -135,6 +151,7 @@ const UnprotectedRouteRouteWithChildren =
 export interface FileRoutesByFullPath {
   '': typeof UnprotectedRouteRouteWithChildren
   '/account': typeof ProtectedAccountRoute
+  '/authenticating': typeof UnprotectedAuthenticatingRoute
   '/login': typeof UnprotectedLoginRoute
   '/logout': typeof UnprotectedLogoutRoute
   '/': typeof ProtectedIndexRoute
@@ -143,6 +160,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '': typeof UnprotectedRouteRouteWithChildren
   '/account': typeof ProtectedAccountRoute
+  '/authenticating': typeof UnprotectedAuthenticatingRoute
   '/login': typeof UnprotectedLoginRoute
   '/logout': typeof UnprotectedLogoutRoute
   '/': typeof ProtectedIndexRoute
@@ -153,6 +171,7 @@ export interface FileRoutesById {
   '/_protected': typeof ProtectedRouteRouteWithChildren
   '/_unprotected': typeof UnprotectedRouteRouteWithChildren
   '/_protected/account': typeof ProtectedAccountRoute
+  '/_unprotected/authenticating': typeof UnprotectedAuthenticatingRoute
   '/_unprotected/login': typeof UnprotectedLoginRoute
   '/_unprotected/logout': typeof UnprotectedLogoutRoute
   '/_protected/': typeof ProtectedIndexRoute
@@ -160,14 +179,15 @@ export interface FileRoutesById {
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '' | '/account' | '/login' | '/logout' | '/'
+  fullPaths: '' | '/account' | '/authenticating' | '/login' | '/logout' | '/'
   fileRoutesByTo: FileRoutesByTo
-  to: '' | '/account' | '/login' | '/logout' | '/'
+  to: '' | '/account' | '/authenticating' | '/login' | '/logout' | '/'
   id:
     | '__root__'
     | '/_protected'
     | '/_unprotected'
     | '/_protected/account'
+    | '/_unprotected/authenticating'
     | '/_unprotected/login'
     | '/_unprotected/logout'
     | '/_protected/'
@@ -208,6 +228,7 @@ export const routeTree = rootRoute
     "/_unprotected": {
       "filePath": "_unprotected/route.tsx",
       "children": [
+        "/_unprotected/authenticating",
         "/_unprotected/login",
         "/_unprotected/logout"
       ]
@@ -215,6 +236,10 @@ export const routeTree = rootRoute
     "/_protected/account": {
       "filePath": "_protected/account.tsx",
       "parent": "/_protected"
+    },
+    "/_unprotected/authenticating": {
+      "filePath": "_unprotected/authenticating.tsx",
+      "parent": "/_unprotected"
     },
     "/_unprotected/login": {
       "filePath": "_unprotected/login.tsx",

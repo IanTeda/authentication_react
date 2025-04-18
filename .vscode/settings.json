@@ -9,7 +9,14 @@
     "*.css": "tailwindcss"
   },
   "cSpell.words": [
+    "Attempting",
+    "cosdensolutions",
     "gitmodules",
-    "shadcn"
+    "grpcweb",
+    "Props",
+    "protoc",
+    "protos",
+    "shadcn",
+    "tslog"
   ]
 }

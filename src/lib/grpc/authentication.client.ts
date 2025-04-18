@@ -17,6 +17,11 @@
 /// - ResetPassword: Reset a password
 /// - Register: Request registration on the server
 /// - Logout: Remove my access and refresh tokens on the server
+///
+/// ## Actions
+///
+/// - [ ] Add token expires in to token responses
+/// - [ ] Add rate limiting metadata to responses
 //
 import type { RpcTransport } from "@protobuf-ts/runtime-rpc";
 import type { ServiceInfo } from "@protobuf-ts/runtime-rpc";

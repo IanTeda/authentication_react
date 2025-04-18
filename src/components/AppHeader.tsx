@@ -1,6 +1,6 @@
 //-- ./src/components/Header.tsx
 
-import { BadgeCheck, LayoutDashboard } from "lucide-react";
+import { BadgeCheck, LayoutDashboard, LogOut } from "lucide-react";
 import Navbar, { type AppMenuItem } from "./Navbar";
 
 // # Application Header
@@ -17,6 +17,11 @@ const app_menu_items: AppMenuItem[] = [
     title: "Account",
     url: "/account",
     icon: BadgeCheck,
+  },
+  {
+    title: "Logout",
+    url: "/logout",
+    icon: LogOut,
   },
 ];
 
