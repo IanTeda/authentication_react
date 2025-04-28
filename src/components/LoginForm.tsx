@@ -142,6 +142,8 @@ export function LoginForm({
         // Only redirects on successful login, errors go into `error` block
         if (routeSearch.redirect) {
           router.navigate({ to: routeSearch.redirect as RedirectPath });
+        } else {
+          router.navigate({ to: "/" });
         }
       } catch (error) {
         // Don't handle redirect errors
