@@ -22,12 +22,12 @@ import { z } from "zod";
 const log = Logger.getInstance();
 
 // Improve type safety by defining the redirect paths
-type RedirectPath = "/" | "/account";
+type RedirectPath = "/" | "/account" | "/users";
 
 
 // URL search schema to validate against
 const redirectSearchSchema = z.object({
-  redirect: z.enum(["/", "/account"]).catch("/"),
+  redirect: z.enum(["/", "/account", "/users"]).catch("/"),
 });
 
 /**

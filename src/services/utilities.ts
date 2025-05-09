@@ -1,55 +1,130 @@
 //-- ./src/services/utilities.ts
 
 /**
- * ## Utilities Service
- *
- * The utilities service is responsible for handling utility requests with the
- * application. The service provides a ping method that returns a response from
- * the backend.
- *
- * @packageDocumentation
- * @module services/utilities
- * @category Services
- * @subcategory Utilities
- *
- * ### References
- *
- * - [dnevb/dburst](https://github.com/dnevb/dburst/blob/a440b2a18f874f22fed2825b6e9b0e24cd606e73/ui/src/provider/services.ts)
+ * # Utilities Service
+ * 
+ * This service is used to send ping requests to the backend. The service provides a ping method.
  */
 
-import { configuration } from "@/configuration";
+import { Client } from "@/client";
 import { Empty } from "@/lib/grpc/common";
-import { PingResponse } from "@/lib/grpc/utilities";
-import { UtilitiesServiceClient } from "@/lib/grpc/utilities.client";
-import { GrpcWebFetchTransport } from "@protobuf-ts/grpcweb-transport";
+import type { PingResponse } from "@/lib/grpc/utilities";
 import Logger from "@/logger";
 
+export class UtilitiesServiceError extends Error {
+  constructor(
+    message: string,
+    public operation: "init" | "ping",
+    public originalError?: unknown
+  ) {
+    super(message);
+    this.name = "UtilitiesServiceError";
+  }
+}
+
+const ERROR_MESSAGES = {
+  INIT_FAILED: "Failed to initialize UtilitiesService",
+  PING_FAILED: "Failed to send ping request",
+} as const;
+
+const GRPC_STATUS = {
+  OK: "0",
+  ERROR: "2",
+} as const;
+
 /**
- * ## Logger Instance
- *
- * Create a new logger instance to log messages to the console.
+ * # Utilities Service
+ * 
+ * This service is used to send ping requests to the backend. The service provides 
+ * a ping method.
+ * 
+ * @class UtilitiesService
+ * @description This service is used to send ping requests to the backend. The service provides a ping method.
+ * @example
+ * const utilitiesService = await UtilitiesService.getInstance();
+ * const response = await utilitiesService.ping();
+ * console.log(response);
  */
-const log = Logger.getInstance();
+export class UtilitiesService {
+  /**
+   * # Logger Instance
+   *
+   * Create a new logger instance to log messages to the console.
+   */
+  private static log = Logger.getInstance();
 
-// TODO: Needs a status or health check type/domain to replace PingResponse
-export async function sendPintRequest(): Promise<PingResponse> {
-  log.debug("Sending ping request to authentication server");
+  /**
+   * The client to be used for making grpc requests
+   *
+   * @type {Client}
+   */
+  private utilitiesClient: ReturnType<Client["utilitiesClient"]>;
 
-  // Create a new GRPC transport layer
-  const transport = new GrpcWebFetchTransport({
-    baseUrl: configuration.AUTHENTICATION_BASE_URL,
-  });
+  /**
+   * # Singleton Instance
+   */
+  private static instance: UtilitiesService;
 
-  // Create a new utilities client
-  const utilities_client = new UtilitiesServiceClient(transport);
+  /**
+   * # Constructor (new)
+   *
+   * @param client - The client to be used for making requests
+   */
+  private constructor(client: Client) {
+    this.utilitiesClient = client.utilitiesClient();
+  }
 
-  // Create a ping request
-  const ping_request = Empty.create({});
+  /**
+   * # Get Instance
+   *
+   * Get the singleton instance of the UtilitiesService
+   *
+   * @returns The singleton instance of UtilitiesService
+   */
+  public static async getInstance(): Promise<UtilitiesService> {
+    if (!UtilitiesService.instance) {
+      try {
+        const client = await Client.new();
+        UtilitiesService.instance = new UtilitiesService(client);
+        this.log.info("UtilitiesService initialised successfully");
+      } catch (error) {
+        this.log.error("Service initialization failed", {
+          error,
+          service: "UtilitiesService",
+        });
+        throw new UtilitiesServiceError(
+          ERROR_MESSAGES.INIT_FAILED,
+          "init",
+          error
+        );
+      }
+    }
+    return UtilitiesService.instance;
+  }
 
-  const { response: ping_response, status } =
-    await utilities_client.ping(ping_request);
+  async ping(): Promise<PingResponse> {
+    try {
+      const requestMessage = Empty.create({});
+      const { response, status } =
+        await this.utilitiesClient.ping(requestMessage);
 
-  log.debug("Authentication server status is:", status);
+      // Check if the response is valid and status is OK (0)
+      if (!response || status?.code !== GRPC_STATUS.OK) {
+        throw new UtilitiesServiceError(
+          ERROR_MESSAGES.PING_FAILED,
+          "ping",
+          new Error(`Invalid response: ${status?.detail || "Unknown error"}`)
+        );
+      }
 
-  return ping_response;
+      return response;
+    } catch (error) {
+      UtilitiesService.log.error("Ping request failed:", { error });
+      throw new UtilitiesServiceError(
+        ERROR_MESSAGES.PING_FAILED,
+        "ping",
+        error
+      );
+    }
+  }
 }

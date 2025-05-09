@@ -39,7 +39,7 @@ import { getRouteApi, useRouter } from "@tanstack/react-router";
 const log = Logger.getInstance();
 
 // Define allowed redirect paths
-type RedirectPath = "/" | "/account";
+type RedirectPath = "/" | "/account" | "/users";
 
 /**
  * # Login Button
@@ -148,12 +148,17 @@ export function LoginForm({
       } catch (error) {
         // Don't handle redirect errors
         if (error instanceof Error && error.name !== "RedirectError") {
-          const message =
-            error instanceof Error
-              ? error.message
-              : "Login failed. Please try again.";
-          log.error("Login error:", message);
+          // Handle login errors
+          let message = error.message || "Login failed. Please try again.";
+
+          // Handle specific error messages
+          if (message === "Failed to fetch") {
+            message = "Authentication service is not reachable.";
+          }
+
           setErrorMessage(decodeURI(message));
+          
+          log.error("Login error:", message);
         } else {
           // Re-throw redirect
           throw error;

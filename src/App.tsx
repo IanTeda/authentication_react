@@ -1,10 +1,25 @@
+//-- ./src/App.tsx
+
+/**
+ * @file App.tsx
+ * @description This file is the main entry point of the application. It sets up the React application,
+ * the Tanstack Query client, and the authentication context.
+ */
+
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useAuthentication } from "./components/AuthenticationProvider";
 import { RouterProvider } from "@tanstack/react-router";
 import "@/index.css";
 import { router } from "./router";
 
-// Initiate a new Tanstack Query client
+/**
+ * Tanstack Query Client
+ * 
+ * Initiate a new instance of the Tanstack Query Client to manage server state 
+ * and caching in the application.
+ * 
+ * @constant {QueryClient} queryClient
+ */
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -13,7 +28,11 @@ const queryClient = new QueryClient({
   },
 });
 
-// React application function
+/**
+ * Main React application component.
+ * Sets up Tanstack Query and authentication context providers.
+ * @returns {JSX.Element} The root application component.
+ */
 export function App() {
   // Use the authentication context to provide authentication state and methods 
   // to the rest of the application. This is a custom hook that is defined in

@@ -45,7 +45,7 @@ export async function sendLoginRequest(
   email: string,
   password: string
 ): Promise<LoginResponse> {
-  log.debug("Sending authentication request to server.");
+  log.info("Sending authentication request to server.");
 
   /**
    * Send login request to authentication client

@@ -20,7 +20,7 @@
  * - [](https://github.com/cosdensolutions/code/blob/master/videos/long/role-based-authentication-in-react/src/components/AuthProvider.tsx)
  */
 
-import type { User } from "@/domains/user";
+import { userFromUserResponse, type User } from "@/domains/user";
 import Logger from "@/logger";
 import {
   sendLoginRequest,
@@ -37,7 +37,6 @@ import {
 
 const log = Logger.getInstance();
 
-// TODO: move to domain to separate concerns
 type Authentication = {
   /**
    * # Is Loading
@@ -159,13 +158,7 @@ export default function AuthenticationProvider({
           throw new Error(AUTHENTICATION_ERRORS.INVALID_LOGIN);
         }
 
-        // Convert user response to a domain user. You can not cast Typescript types.
-        // If block above checks for undefined case
-        const user: User = {
-          id: response.user.id,
-          email: response.user.email,
-          role: response.user.role,
-        };
+        const user = userFromUserResponse(response.user);
 
         const { accessToken: token } = response;
 
@@ -219,13 +212,7 @@ export default function AuthenticationProvider({
         throw new Error(AUTHENTICATION_ERRORS.INVALID_LOGIN);
       }
 
-      // Convert user response to a domain user. You can not cast Typescript types.
-      // If block above checks for undefined case
-      const currentUser: User = {
-        id: response.user.id,
-        email: response.user.email,
-        role: response.user.role,
-      };
+      const currentUser = userFromUserResponse(response.user);
 
       setAccessToken(response.accessToken);
       setCurrentUser(currentUser);

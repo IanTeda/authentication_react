@@ -76,6 +76,11 @@ export type UpdateUserParams = CreateUserParams & {
   id: string;
 };
 
+// const USER_SERVICE_DEFAULTS = {
+//   INDEX_LIMIT: 10n,
+//   INDEX_OFFSET: 0n,
+// } as const;
+
 /**
  * # User Service Error
  *
@@ -99,13 +104,53 @@ export class UsersServiceError extends Error {
 }
 
 /**
+ * # Error Messages
+ *
+ * The ERROR_MESSAGES object is used to define error messages that occur in the user service.
+ */
+const ERROR_MESSAGES = {
+  INIT_FAILED: "Failed to initialize UsersService",
+  CREATE_FAILED: "Failed to create user",
+  READ_FAILED: "Failed to read user",
+  UPDATE_FAILED: "Failed to update user",
+  DELETE_FAILED: "Failed to delete user",
+  INDEX_FAILED: "Failed to index users",
+} as const;
+
+/**
  * Create a new logger object
  *
  * @type {Logger}
  */
 const log: Logger = Logger.getInstance();
 
-class UsersService {
+/**
+ * # Users Service
+ * 
+ * The UsersService class is responsible for handling user-related operations with the backend such as creating, reading, updating, and deleting users.
+ * 
+ * @class UsersService
+ * @implements Singleton pattern for managing a single instance of the service
+ * 
+ * ## Example
+ * 
+ * ```typescript
+ * import { UsersService } from "@/services/users";
+ * 
+ * const usersService = await UsersService.getInstance();
+ * 
+ * let userParams: createUserParams = {
+ *  email: "someone@hotmail.com",
+ *   name: "Someone",
+ *   password: "password",
+ *   role: "admin",
+ *   isActive: true,
+ *   isVerified: true,
+ * }
+ * const user = await usersService.create(userParams);
+ * ```
+ */
+export class UsersService {
   /**
    * The client to be used for making grpc requests
    *
@@ -135,18 +180,14 @@ class UsersService {
    * @param client - The client to be used for making requests
    * @returns The singleton instance of UsersService
    */
-  public static async getInstance(): Promise<UsersService> {
+  public static async getInstance(accessToken?: string): Promise<UsersService> {
     if (!UsersService.instance) {
       try {
-        const client = await Client.new();
+        const client = await Client.new(accessToken);
         UsersService.instance = new UsersService(client);
       } catch (error) {
         log.error("Failed to initialize UsersService:", error);
-        throw new UsersServiceError(
-          "Failed to initialize UsersService",
-          "init",
-          error
-        );
+        throw new UsersServiceError(ERROR_MESSAGES.INIT_FAILED, "init", error);
       }
     }
     return UsersService.instance;
@@ -161,25 +202,38 @@ class UsersService {
    *
    * @returns Promise resolving to the grpc `UserResponse`
    */
-  async create(params: CreateUserParams): Promise<UserResponse> {
+  async create({
+    email,
+    name,
+    password,
+    role,
+    isActive,
+    isVerified,
+  }: CreateUserParams): Promise<UserResponse> {
     try {
-      const createUseRequest: CreateUserRequest = {
-        email: params.email,
-        name: params.name,
-        password: params.password,
-        role: params.role,
-        isActive: params.isActive,
-        isVerified: params.isVerified,
+      const createUserRequestMessage: CreateUserRequest = {
+        email,
+        name,
+        password,
+        role,
+        isActive,
+        isVerified,
       };
 
-      const { response } = await this.usersClient.create(createUseRequest);
+      const { response } = await this.usersClient.create(
+        createUserRequestMessage
+      );
 
       return response;
     } catch (error) {
       log.error("Error sending create user request:", error);
 
       // Re-throw a custom error to be handled by the caller
-      throw new UsersServiceError("Failed to create user", "create", error);
+      throw new UsersServiceError(
+        ERROR_MESSAGES.CREATE_FAILED,
+        "create",
+        error
+      );
     }
   }
 
@@ -204,7 +258,7 @@ class UsersService {
       log.error("Error sending read user request:", error);
 
       // Re-throw a custom error to be handled by the caller
-      throw new UsersServiceError("Failed to reading a user", "read", error);
+      throw new UsersServiceError(ERROR_MESSAGES.READ_FAILED, "read", error);
     }
   }
 
@@ -213,15 +267,16 @@ class UsersService {
    *
    * Reads an index users from the backend.
    *
-   * @param params - User index parameters `IndexUsersParams`
+   * @param limit - The maximum number of users to return
+   * @param offset - The number of users to skip
    * @throws {UserServiceError} If index read fails
    * @returns Promise resolving to the grpc `UserIndexResponse`
    */
-  async index(params: IndexUsersParams): Promise<UserIndexResponse> {
+  async index({ limit, offset }: IndexUsersParams): Promise<UserIndexResponse> {
     try {
       const indexUsersRequest = {
-        limit: params.limit,
-        offset: params.offset,
+        limit,
+        offset,
       };
       const { response } = await this.usersClient.index(indexUsersRequest);
 
@@ -230,7 +285,7 @@ class UsersService {
       log.error("Error sending index user request:", error);
 
       // Re-throw a custom error to be handled by the caller
-      throw new UsersServiceError("Failed to index users", "index", error);
+      throw new UsersServiceError(ERROR_MESSAGES.INDEX_FAILED, "index", error);
     }
   }
 
@@ -261,7 +316,11 @@ class UsersService {
       log.error("Error sending update user request:", error);
 
       // Re-throw a custom error to be handled by the caller
-      throw new UsersServiceError("Failed to update the user", "update", error);
+      throw new UsersServiceError(
+        ERROR_MESSAGES.UPDATE_FAILED,
+        "update",
+        error
+      );
     }
   }
 
@@ -287,158 +346,11 @@ class UsersService {
       log.error("Error sending delete user request:", error);
 
       // Re-throw a custom error to be handled by the caller
-      throw new UsersServiceError("Failed to update user", "update", error);
+      throw new UsersServiceError(
+        ERROR_MESSAGES.DELETE_FAILED,
+        "delete",
+        error
+      );
     }
   }
 }
-
-// /**
-//  * # Send Create User Request
-//  *
-//  * The sendCreateUserRequest function is responsible for sending a create user
-//  * request to the backend. The function accepts an email, name, password,
-//  * role, isActive, and isVerified and returns a user response from the backend.
-//  *
-//  * @param email
-//  * @param name
-//  * @param password
-//  * @param role
-//  * @param isActive
-//  * @param isVerified
-//  * @returns Promise<UserResponse>
-//  */
-// export async function createUserRequest(
-//   email: string,
-//   name: string,
-//   password: string,
-//   role: string,
-//   isActive: boolean,
-//   isVerified: boolean
-// ): Promise<UserResponse> {
-//   try {
-//     const client = await Client.new();
-//     const users_client = client.usersClient();
-
-//     const create_user_request: CreateUserRequest = {
-//       email: email,
-//       name: name,
-//       password: password,
-//       role: role,
-//       isActive: isActive,
-//       isVerified: isVerified,
-//     };
-
-//     const { response } = await users_client.create(create_user_request);
-
-//     return response;
-//   } catch (error) {
-//     log.error("Error sending create user request:", error);
-
-//     // Re-throw the error to be handled by the caller
-//     throw error;
-//   }
-// }
-
-// /**
-//  * # Read User
-//  *
-//  * The readUser function is responsible for sending a read user request to the backend.
-//  * The function accepts an id and returns a user response from the backend.
-//  *
-//  * @param id
-//  * @returns Promise<UserResponse>
-//  */
-// export async function readUser(id: string): Promise<UserResponse> {
-//   try {
-//     const client = await Client.new();
-//     const users_client = client.usersClient();
-
-//     const read_user_request = {
-//       id: id,
-//     };
-//     const { response } = await users_client.read(read_user_request);
-
-//     return response;
-//   } catch (error) {
-//     log.error("Error sending read user request:", error);
-
-//     // Re-throw the error to be handled by the caller
-//     throw error;
-//   }
-// }
-
-// export async function indexUsers(
-//   limit: bigint,
-//   offset: bigint
-// ): Promise<UserIndexResponse> {
-//   try {
-//     const client = await Client.new();
-//     const users_client = client.usersClient();
-
-//     const index_users_request = {
-//       limit: limit,
-//       offset: offset,
-//     };
-//     const { response } = await users_client.index(index_users_request);
-
-//     return response;
-//   } catch (error) {
-//     log.error("Error sending index user request:", error);
-
-//     // Re-throw the error to be handled by the caller
-//     throw error;
-//   }
-// }
-
-// export async function updateUser(
-//   id: string,
-//   email: string,
-//   name: string,
-//   password: string,
-//   role: string,
-//   isActive: boolean,
-//   isVerified: boolean
-// ): Promise<UserResponse> {
-//   try {
-//     const client = await Client.new();
-//     const users_client = client.usersClient();
-
-//     const update_user_request = {
-//       id: id,
-//       email: email,
-//       name: name,
-//       password: password,
-//       role: role,
-//       isActive: isActive,
-//       isVerified: isVerified,
-//     };
-//     const { response } = await users_client.update(update_user_request);
-
-//     return response;
-//   } catch (error) {
-//     log.error("Error sending update user request:", error);
-
-//     // Re-throw the error to be handled by the caller
-//     throw error;
-//   }
-// }
-
-// export async function deleteUser(id: string): Promise<DeleteUserResponse> {
-//   try {
-//     const client = await Client.new();
-//     const users_client = client.usersClient();
-
-//     const delete_user_request = {
-//       id: id,
-//     };
-
-//     const { response } = await users_client.delete(delete_user_request);
-
-//     return response;
-//   } catch (error) {
-//     log.error("Error sending delete user request:", error);
-
-//     // Re-throw the error to be handled by the caller
-//     throw error;
-//   }
-// }
